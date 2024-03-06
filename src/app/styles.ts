@@ -13,6 +13,13 @@ export const styles  = StyleSheet.create({
     
 
   },
+  message:{
+    fontSize:theme.fonts.size.body.md,
+    fontFamily:theme.fonts.family.regular,
+    marginTop:12,
+    marginBottom:3,
+    color:theme.colors.gray_400,
+  },
   subtitle:{
     fontFamily:theme.fonts.family.regular,
   }
