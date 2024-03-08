@@ -1,12 +1,16 @@
 import { useState, useEffect } from "react";
-import { View, Text, Alert } from "react-native";
+import { View, Text, Alert, ScrollView } from "react-native";
 import { styles } from "./styles";
 import { Ingredient } from "@/components/Ingredient";
 import { router } from "expo-router";
+import { services } from "@/services";
+import { Loading } from "@/components/Loading";
+import { Selected } from "@/components/selected";
 
 export default function Index() {
   const [isLoading, setIsLoading] = useState(true);
   const [selected, setSelected] = useState<string[]>([]);
+  const [ingredients, setIngredients] = useState<IngredientResponse[]>([]);
 
   function handleToggleSelected(value: string) {
     if (selected.includes(value)) {
@@ -20,8 +24,19 @@ export default function Index() {
       { text: "sim", onPress: () => setSelected([]) },
     ]);
   }
-  function handleSearch(){
-    router.navigate('/recipes/'+selected)
+  function handleSearch() {
+    router.navigate("/recipes/" + selected);
+  }
+  useEffect(() => {
+    services.ingredientes
+      .findAll()
+      .then(setIngredients)
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, []);
+  if (isLoading) {
+    return <Loading />;
   }
   return (
     <View style={styles.container}>
@@ -32,7 +47,28 @@ export default function Index() {
       <Text style={styles.message}>
         Descubra receitas baseadas nos produtos que você escolheu
       </Text>
-      <Ingredient />
+      <ScrollView
+        contentContainerStyle={styles.ingredient}
+        showsVerticalScrollIndicator={false}
+      >
+        {ingredients.map((ingredient) => (
+          <Ingredient
+            key={ingredient.id}
+            name={ingredient.name}
+            image={`${services.storage.imagePath}/${ingredient.image}`}
+            selected={selected.includes(ingredient.id)}
+            onPress={() => handleToggleSelected(ingredient.id)}
+          />
+          
+        ))}
+      </ScrollView>
+      {selected.length > 0 && (
+        <Selected
+          quantity={selected.length}
+          onClear={handleClearSelected}
+          onSearch={handleSearch}
+        />
+      )}
     </View>
   );
 }
